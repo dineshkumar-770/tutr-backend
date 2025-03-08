@@ -29,6 +29,7 @@ func CreateStudentUser(w http.ResponseWriter, r *http.Request) {
 	}
 	student.StudentID = h.GenerateUserID("student")
 	student.CreatedAt = int(time.Now().Unix())
+	student.TeacherCode = ""
 	db := database.GetDBInstance()
 	_, errdb := db.Exec("INSERT INTO register_students (student_id,full_name,email,created_at,password,contact_number,class,teacher_code,parents_contact,full_address) VALUES (?,?,?,?,?,?,?,?,?,?)",
 		student.StudentID, student.FullName, student.Email, student.CreatedAt, student.Password, student.ContactNumber, student.Class, student.TeacherCode, student.ParentsContact, student.FullAddress,
@@ -44,7 +45,7 @@ func CreateStudentUser(w http.ResponseWriter, r *http.Request) {
 
 	mr.MyResponse = student
 	mr.Status = "success"
-	mr.Message = fmt.Sprintf("student registerd successfully with student id %s", student.StudentID)
+	mr.Message = fmt.Sprintf("Student registerd successfully with student id %s", student.StudentID)
 	u.SendResponseWithOK(w, mr)
 
 }

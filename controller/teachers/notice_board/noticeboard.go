@@ -38,7 +38,7 @@ func CreateNoticeForGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := database.GetDBInstance()
-	_, dbErr := db.Exec("INSERT INTO tution_management.group_notice_board (notice_id,title,description,group_id,teacher_id,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+	_, dbErr := db.Exec("INSERT INTO tutrdevdb.group_notice_board (notice_id,title,description,group_id,teacher_id,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
 		noticeId, title, description, groupId, tokenData.UserID, createdAt, updatedAt,
 	)
 
@@ -80,7 +80,7 @@ func UpdateNoticeBoardForGroup(w http.ResponseWriter, r *http.Request) {
 	updateAt := time.Now().Unix()
 
 	db := database.GetDBInstance()
-	_, updpateErr := db.Exec("UPDATE tution_management.group_notice_board SET description = (?), title = (?), updated_at = (?) WHERE (notice_id = ? AND group_id = ?)", newDesc, newTitle, updateAt, noticeId, groupID)
+	_, updpateErr := db.Exec("UPDATE tutrdevdb.group_notice_board SET description = (?), title = (?), updated_at = (?) WHERE (notice_id = ? AND group_id = ?)", newDesc, newTitle, updateAt, noticeId, groupID)
 	if updpateErr != nil {
 		resp.Message = "error in updating current notice"
 		fmt.Println(updpateErr)
@@ -90,7 +90,7 @@ func UpdateNoticeBoardForGroup(w http.ResponseWriter, r *http.Request) {
 
 	var noticeData []tn.NoticeBoardModel
 
-	rows, err := db.Query("SELECT description, title, updated_at, notice_id FROM tution_management.group_notice_board WHERE notice_id = (?) AND group_id = (?)", noticeId, groupID)
+	rows, err := db.Query("SELECT description, title, updated_at, notice_id FROM tutrdevdb.group_notice_board WHERE notice_id = (?) AND group_id = (?)", noticeId, groupID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			resp.Message = "No notices found for this group"
@@ -148,7 +148,7 @@ func GetGroupNoticeBoard(w http.ResponseWriter, r *http.Request) {
 	db := database.GetDBInstance()
 	var noticeData []tn.NoticeBoardModel
 
-	rows, err := db.Query("SELECT description, title, updated_at, notice_id FROM tution_management.group_notice_board WHERE  group_id = (?)", groupId)
+	rows, err := db.Query("SELECT description, title, updated_at, notice_id FROM tutrdevdb.group_notice_board WHERE  group_id = (?)", groupId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			resp.Message = "No notices found for this group"
