@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"main/constants"
+	"main/controller/student"
 	"main/database"
 	"main/helpers"
 	"main/middlewares"
@@ -11,6 +12,7 @@ import (
 	tg "main/models/create_group"
 	u "main/utils"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -71,6 +73,11 @@ func GetAllGroupsCreatedByTeacher(w http.ResponseWriter, r *http.Request) {
 
 	tokenData := helpers.VerifyTokenAndGetUserID(w, r)
 	if tokenData.UserID == "" || tokenData.UserEmail == "" || tokenData.UserType == "" {
+		return
+	}
+
+	if strings.Contains(tokenData.UserID, "student") {
+		student.GetAllGroupsWhereStudentAdded(w, r, tokenData.UserID)
 		return
 	}
 
@@ -161,7 +168,7 @@ func AddStudentsToGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp.Message = "Student added to your group successfully"
+	resp.Message = "Student added to ygour group successfully"
 	resp.Status = "success"
 	resp.MyResponse = nil
 	u.SendResponseWithOK(w, resp)
@@ -216,7 +223,7 @@ func GetAllStudentsOfGroup(w http.ResponseWriter, r *http.Request) {
 		resp.Message = "no member found for this group"
 		resp.MyResponse = nil
 		u.SendResponseWithStatusNotFound(w, resp)
-		return 
+		return
 	}
 
 	resp.Status = "success"
