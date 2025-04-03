@@ -10,11 +10,7 @@ import (
 type EnvVariables struct {
 	EmailAppPassword    string
 	AppEmailID          string
-	DatabaseRole        string
-	DatabasePassword    string
-	DatabaseName        string
-	DatabasePORT        string
-	DatabaseIPAddress   string
+	DatabaseUrl         string
 	S3BucketName        string
 	AWSAccessKey        string
 	AwsSecretKey        string
@@ -33,12 +29,8 @@ func GetEnvVars() (EnvVariables, error) {
 	}
 
 	e.EmailAppPassword = os.Getenv("EMAILAPPPASSWORD")
+	e.DatabaseUrl = os.Getenv("DATABASEURL")
 	e.AppEmailID = os.Getenv("APPEMAILID")
-	e.DatabaseRole = os.Getenv("DEVDBROLE")
-	e.DatabasePassword = os.Getenv("DEVDBPASSWORD")
-	e.DatabaseIPAddress = os.Getenv("DEVDBIPADDRESS")
-	e.DatabasePORT = os.Getenv("DATABASEPORT")
-	e.DatabaseName = os.Getenv("DEVDBNAME")
 	e.AWSAccessKey = os.Getenv("AWSBUCKETACCESSKEY")
 	e.AwsSecretKey = os.Getenv("AWSBUCKETSECRETKEY")
 	e.S3BucketName = os.Getenv("S3BUCKETNAME")
