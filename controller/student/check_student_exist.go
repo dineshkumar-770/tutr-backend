@@ -64,7 +64,7 @@ func CheckStudentExistOrNot(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetAllGroupsWhereStudentAdded(w http.ResponseWriter, r *http.Request) {
+func GetAllGroupsWhereStudentAdded(w http.ResponseWriter, r *http.Request,studentId string) {
 	resp := utils.ResponseStr{
 		Status:     "failed",
 		Message:    "something went wrong",
@@ -78,7 +78,7 @@ func GetAllGroupsWhereStudentAdded(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	studentId := r.FormValue("student_id")
+	// studentId := r.FormValue("student_id")
 
 	if studentId == "" {
 		utils.SendResponseWithMissingValues(w)
@@ -89,7 +89,7 @@ func GetAllGroupsWhereStudentAdded(w http.ResponseWriter, r *http.Request) {
 
 	db := database.GetDBInstance()
 
-	rows, dbErr := db.Query("SELECT tutrdevdb.teacher_student_group.group_id,tutrdevdb.teacher_student_group.group_name,tutrdevdb.teacher_student_group.group_desc,tutrdevdb.teacher_student_group.teacher_id,tutrdevdb.teacher_student_group.created_at, tutrdevdb.teacher_student_group.group_class FROM tutrdevdb.group_members JOIN tutrdevdb.teacher_student_group ON tutrdevdb.group_members.group_id = tutrdevdb.teacher_student_group.group_id WHERE  tutrdevdb.group_members.student_id = (?);", studentId)
+	rows, dbErr := db.Query("SELECT tutrdevdb.teacher_student_group.group_id,tutrdevdb.teacher_student_group.group_name,tutrdevdb.teacher_student_group.group_desc,tutrdevdb.teacher_student_group.created_at,tutrdevdb.teacher_student_group.group_class,tutrdevdb.register_teachers.* FROM tutrdevdb.group_members RIGHT JOIN tutrdevdb.teacher_student_group ON tutrdevdb.group_members.group_id = tutrdevdb.teacher_student_group.group_id RIGHT JOIN  tutrdevdb.register_teachers ON tutrdevdb.teacher_student_group.teacher_id = tutrdevdb.register_teachers.teacher_id WHERE tutrdevdb.group_members.student_id = (?);", studentId)
 
 	if dbErr != nil {
 		if dbErr == sql.ErrNoRows {
@@ -109,48 +109,31 @@ func GetAllGroupsWhereStudentAdded(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var studentGroup tg.AllTeacherByStudentModel
-		var teacherData models.Teacher
-		err := rows.Scan(&studentGroup.GroupId, &studentGroup.GroupName, &studentGroup.GroupDesctiption, &studentGroup.TeacherId, &studentGroup.CreatedAt, &studentGroup.GroupClass)
+		studentGroup.TeacherDetails = &tg.StudentTeacher{}
+		err := rows.Scan(
+			&studentGroup.GroupId,
+			&studentGroup.GroupName,
+			&studentGroup.GroupDesctiption,
+			&studentGroup.CreatedAt,
+			&studentGroup.GroupClass,
+			&studentGroup.TeacherDetails.TeacherID,
+			&studentGroup.TeacherDetails.FullName,
+			&studentGroup.TeacherDetails.Email,
+			&studentGroup.TeacherDetails.ContactNumber,
+			&studentGroup.TeacherDetails.Subject,
+			&studentGroup.TeacherDetails.CreatedAt,
+			&studentGroup.TeacherDetails.Qualification,
+			&studentGroup.TeacherDetails.ExperienceYears,
+			&studentGroup.TeacherDetails.Address,
+			&studentGroup.TeacherDetails.ClassAssigned,
+			&studentGroup.TeacherDetails.TeacherCode,
+		)
 
 		if err != nil {
 			resp.Message = "unable to red the groups that you has been added to. Kindly confirm the teacher that you are been added though!"
 			fmt.Println(err)
 			utils.SendResponseWithServerError(w, resp)
 			return
-		}
-		if studentGroup.TeacherId != nil {
-			row := db.QueryRow("SELECT * FROM tutrdevdb.register_teachers WHERE register_teachers.teacher_id = (?)", studentGroup.TeacherId)
-
-			teacherErr := row.Scan(
-				&teacherData.TeacherID,
-				&teacherData.FullName,
-				&teacherData.Email,
-				&teacherData.ContactNumber,
-				&teacherData.Subject,
-				&teacherData.CreatedAt,
-				&teacherData.Qualification,
-				&teacherData.ExperienceYears,
-				&teacherData.Address,
-				&teacherData.ClassAssigned,
-				&teacherData.TeacherCode)
-
-			if teacherErr != nil {
-				if teacherErr == sql.ErrNoRows {
-					fmt.Println("parsing student groups ", dbErr)
-					resp.Status = "failed"
-					resp.Message = "It seems you are not add to any group by any teacher"
-					utils.SendResponseWithStatusNotFound(w, resp)
-					return
-				}
-
-				fmt.Println("parsing teachers groups ", dbErr)
-				resp.Status = "failed"
-				resp.Message = "Some error occured while fetching your groups and teacher details"
-				utils.SendResponseWithServerError(w, resp)
-				return
-			}
-
-			studentGroup.TeacherDetails = &teacherData
 		}
 
 		studentGroupsList = append(studentGroupsList, studentGroup)
