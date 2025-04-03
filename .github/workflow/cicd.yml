@@ -1,0 +1,13 @@
+name: Deploy GO application
+
+on:
+  push:
+    branches:
+      - main
+
+jobs: 
+  build:
+    run-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        use: actions/checkout@v4
