@@ -3,11 +3,20 @@ name: Deploy GO application
 on:
   push:
     branches:
-      - main
+      - deploy_to_server
 
 jobs: 
-  build:
-    run-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
+
+
     steps:
       - name: Checkout Source
-        use: actions/checkout@v4
+        uses: actions/checkout@v4
+      
+      - name: Setup go env
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.1
+      
+      

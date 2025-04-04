@@ -1,3 +1,16 @@
 package constants
 
 const Authrization string = "Authorization"
+const STUDENT string = "student"
+const TEACHER string = "teacher"
+const SUCCESS string = "success"
+const FAILED string = "failed"
+const DB_INSERT_OTP_FAILED = "Cannot insert or send otp to the given mail now. Try again later"
+const USER_NOT_REGISTERED_MESSAGE string = "It seems you are not registered with us. Kindly register yourself and then try to login."
+const INVALID_OTP_MESSAGE string = "Invalid OTP. Kindly check Email again and enter the correct OTP "
+const OTP_VERIFIED_MESSAGE string = "OTP verified successfully. Kindly login now."
+const OTP_EXPIRED_MESSAGE string = "OTP has been expired. Kindly request the new one."
+const MISSING_FIELD_EMAIL_MESSAGE string = "Missing field email is required!"
+const MISSING_FIELD_REQUIRED_MESSAGE string = "Missing field are not allowd! Kindly provider the appopriate information"
+const OTP_SENT_ERROR = "Error in sending OTP to this mail. Please try again later or contact to support."
+const OTP_SENT_SUCCESS = "OTP has been sent to this email. Kindly check your mail"
