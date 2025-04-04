@@ -24,7 +24,6 @@ func Initialize() *sql.DB {
 		var err error
 		// dbUrl := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", envs.DatabaseRole, envs.DatabasePassword, envs.DatabaseIPAddress, envs.DatabasePORT, envs.DatabaseName)
 		dbUrl := envs.DatabaseUrl 
-		fmt.Println(dbUrl)
 		dbInstance, err = sql.Open("mysql", dbUrl)
 		if err != nil {
 			log.Fatalf("Failed to connect to MySQL: %v", err)
