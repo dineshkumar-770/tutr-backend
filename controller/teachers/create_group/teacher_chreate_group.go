@@ -189,7 +189,7 @@ func GetAllStudentsOfGroup(w http.ResponseWriter, r *http.Request) {
 	var members []tg.GroupMemberStudentsData
 
 	ownerID := tokenData.UserID
-	groupID := r.FormValue("group_id")
+	groupID := r.URL.Query().Get("group_id")
 
 	if groupID == "" {
 		u.SendResponseWithMissingValues(w)
