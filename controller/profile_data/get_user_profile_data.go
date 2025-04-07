@@ -25,14 +25,14 @@ func GetUserProfileData(w http.ResponseWriter, r *http.Request) {
 	}
 	tokenString = tokenString[len("Bearer "):]
 	claims, err := middlewares.VerifyToken(tokenString)
-	if err != nil {
+	if err != nil || claims["user_id"] == ""{
 		resp.Message = "unable to verify your token"
 		fmt.Println(err)
 		u.SendResponseWithUnauthorizedError(w)
 		return
 	}
 
-	userId := claims["user_id"]
+	userId := claims["user_id"].(string)
 
 	if userId == "" {
 		resp.Message = "unable to verify your token"
@@ -43,7 +43,7 @@ func GetUserProfileData(w http.ResponseWriter, r *http.Request) {
 
 	db := database.GetDBInstance()
 
-	if strings.Contains(userId.(string), "student") {
+	if strings.Contains(userId, "student") {
 		var studentData models.StudentUserResponse
 		dbErr := db.QueryRow("SELECT * FROM tutrdevdb.register_students WHERE student_id = (?)", userId).Scan(
 			&studentData.StudentID,
