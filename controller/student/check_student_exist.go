@@ -24,7 +24,7 @@ func CheckStudentExistOrNot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	studentphone := r.FormValue("phone_number")
+	studentphone := r.URL.Query().Get("phone_number")
 
 	if studentphone == "" {
 		utils.SendResponseWithMissingValues(w)
