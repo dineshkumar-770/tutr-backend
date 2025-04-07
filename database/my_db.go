@@ -22,7 +22,6 @@ func Initialize() *sql.DB {
 	}
 	once.Do(func() {
 		var err error
-		// dbUrl := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", envs.DatabaseRole, envs.DatabasePassword, envs.DatabaseIPAddress, envs.DatabasePORT, envs.DatabaseName)
 		dbUrl := envs.DatabaseUrl 
 		dbInstance, err = sql.Open("mysql", dbUrl)
 		if err != nil {

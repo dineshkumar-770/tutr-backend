@@ -42,3 +42,6 @@ func main() {
 	log.Println("Server starting on port 8088...")
 	log.Fatal(http.ListenAndServe(":8088", r))
 }
+
+//Go test run commands
+// go test ./controller/... -run "TestSentEmailSuccess|TestCreateTeacherUserSuccess|TestCreateStudentUserSuccess|TestSentEmailTeacherSuccess"
