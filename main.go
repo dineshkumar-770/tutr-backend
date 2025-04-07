@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"main/controller/attendance"
 	controller "main/controller/auth"
 	doubtchats "main/controller/doubt_chats"
 	"main/controller/emails"
@@ -39,6 +40,8 @@ func main() {
 	r.HandleFunc("/get_user_profile", p.GetUserProfileData).Methods("GET")
 	r.HandleFunc("/save_teacher_note", tan.AddTeacherClassNotesToStorage2).Methods("POST")
 	r.HandleFunc("/get_all_notes_in_group", tan.GetAllNotesOfTheGroup).Methods("GET")
+	r.HandleFunc("/mark_attendance", attendance.MarkStudentAttendance).Methods("POST")
+	r.HandleFunc("/get_attendance_record",attendance.GetAllAttendanceDataOfGroup).Methods("GET")
 	log.Println("Server starting on port 8088...")
 	log.Fatal(http.ListenAndServe(":8088", r))
 }
