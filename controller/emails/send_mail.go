@@ -56,7 +56,7 @@ func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {
 		db.Exec("INSERT INTO user_otps (otp,expiry,email,user_id,login_type) VALUES (?,?,?,?,?)", otp, otpExpiry, email, studentID, loginType)
 		resp.Status = constants.SUCCESS
 		resp.Message = constants.OTP_SENT_SUCCESS
-		resp.MyResponse = otp
+		// resp.MyResponse = otp
 		u.SendResponseWithOK(w, resp)
 		return
 	} else if loginType == constants.TEACHER {
@@ -90,7 +90,7 @@ func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {
 		resp.Status = constants.SUCCESS
 		resp.Message = constants.OTP_SENT_SUCCESS
 		fmt.Println("otp request my user", otp)
-		resp.MyResponse = otp
+		// resp.MyResponse = otp
 		u.SendResponseWithOK(w, resp)
 		return
 	}
