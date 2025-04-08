@@ -18,6 +18,7 @@ func CheckStudentExistOrNot(w http.ResponseWriter, r *http.Request) {
 		Message:    "something went wrong",
 		MyResponse: nil,
 	}
+
 	tokenString := r.Header.Get(constants.Authrization)
 	if tokenString == "" {
 		utils.SendResponseWithUnauthorizedError(w)
@@ -25,46 +26,66 @@ func CheckStudentExistOrNot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	studentphone := r.URL.Query().Get("phone_number")
-
 	if studentphone == "" {
 		utils.SendResponseWithMissingValues(w)
 		return
 	}
 
-	var students []models.StudentUserResponse
+	phoneNum, err := strconv.ParseInt(studentphone, 10, 64)
+	if err != nil {
+		resp.Message = "invalid phone number format"
+		utils.SendResponseWithMissingValues(w)
+		return
+	}
 
 	db := database.GetDBInstance()
-	phoneNum, _ := strconv.ParseInt(studentphone, 10, 64)
-	rows, dbErr := db.Query("SELECT * FROM tutrdevdb.register_students WHERE contact_number = (?)", phoneNum)
-	fmt.Println("current users row", rows)
+	query := `SELECT * FROM tutrdevdb.register_students WHERE contact_number = ?`
+	rows, dbErr := db.Query(query, phoneNum)
 	if dbErr != nil {
+		resp.Message = "database error"
+		resp.MyResponse = dbErr.Error()
+		utils.SendResponseWithServerError(w, resp)
+		return
+	}
+	// defer rows.Close()
+
+	var students []models.StudentUserResponse
+	for rows.Next() {
+		var student models.StudentUserResponse
+		err := rows.Scan(
+			&student.StudentID,
+			&student.FullName,
+			&student.Email,
+			&student.CreatedAt,
+			&student.Password,
+			&student.ContactNumber,
+			&student.Class,
+			&student.TeacherCode,
+			&student.ParentsContact,
+			&student.FullAddress,
+		)
+		if err != nil {
+			resp.Message = "error scanning student data"
+			resp.MyResponse = err.Error()
+			utils.SendResponseWithServerError(w, resp)
+			return
+		}
+		students = append(students, student)
+	}
+
+	if len(students) == 0 {
 		resp.Message = "student not registered with this number"
-		fmt.Println("db error", dbErr)
 		utils.SendResponseWithStatusNotFound(w, resp)
 		return
 	}
 
-	for rows.Next() {
-		var student models.StudentUserResponse
-		rowErr := rows.Scan(&student.StudentID, &student.FullName, &student.Email, &student.CreatedAt, &student.Password, &student.ContactNumber, &student.Class, &student.TeacherCode, &student.ParentsContact, &student.FullAddress)
-		if rowErr != nil {
-			fmt.Println("row error", rowErr)
-			resp.MyResponse = rowErr
-			utils.SendResponseWithServerError(w, resp)
-			return
-		}
-		fmt.Println(student)
-		students = append(students, student)
-	}
-
 	resp.MyResponse = students[0]
-	resp.Message = "User added successfully"
+	resp.Message = "User found successfully"
 	resp.Status = "success"
 	utils.SendResponseWithOK(w, resp)
-
 }
 
-func GetAllGroupsWhereStudentAdded(w http.ResponseWriter, r *http.Request,studentId string) {
+func GetAllGroupsWhereStudentAdded(w http.ResponseWriter, r *http.Request, studentId string) {
 	resp := utils.ResponseStr{
 		Status:     "failed",
 		Message:    "something went wrong",
