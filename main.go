@@ -41,7 +41,8 @@ func main() {
 	r.HandleFunc("/save_teacher_note", tan.AddTeacherClassNotesToStorage2).Methods("POST")
 	r.HandleFunc("/get_all_notes_in_group", tan.GetAllNotesOfTheGroup).Methods("GET")
 	r.HandleFunc("/mark_attendance", attendance.MarkStudentAttendance).Methods("POST")
-	r.HandleFunc("/get_attendance_record",attendance.GetAllAttendanceDataOfGroup).Methods("GET")
+	r.HandleFunc("/get_attendance_record", attendance.GetAllAttendanceDataOfGroup).Methods("GET")
+	r.HandleFunc("/delete_notes", tan.DeleteTeacherNotes).Methods("DELETE")
 	log.Println("Server starting on port 8088...")
 	log.Fatal(http.ListenAndServe(":8088", r))
 }

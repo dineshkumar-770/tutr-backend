@@ -24,7 +24,7 @@ var myAwsInstance = awshelper.AwsInstance{}
 func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 	resp := u.ResponseStr{
 		Status:     "failed",
-		Message:    "something went wrong",
+		Message:    constants.SOMETHING_WENT_WRONG,
 		MyResponse: nil,
 	}
 
@@ -37,7 +37,6 @@ func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 	tokenString = tokenString[len("Bearer "):]
 	claims, err := middlewares.VerifyToken(tokenString)
 	if err != nil {
-		resp.Message = "unable to verify your token"
 		fmt.Println(err)
 		u.SendResponseWithUnauthorizedError(w)
 		return
@@ -49,7 +48,7 @@ func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(teacherId)
 
 	if groupId == "" {
-		resp.Message = "Missing values are not allowed"
+
 		u.SendResponseWithMissingValues(w)
 		return
 	}
@@ -100,7 +99,6 @@ func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 				Key:    aws.String(filePath),
 			})
 			signedURL, err := req.Presign(168 * time.Hour)
-			getFileMetadata(signedURL)
 			if err == nil {
 				signedURLs = append(signedURLs, signedURL)
 			}
@@ -114,33 +112,6 @@ func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 	resp.Message = "Notes fetched successfully"
 	resp.MyResponse = listOfGroupNotes
 	u.SendResponseWithOK(w, resp)
-}
-func getFileMetadata(signedURL string) {
-	req, err := http.NewRequest("HEAD", signedURL, nil)
-	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error fetching metadata:", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	// Displaying the headers
-	fmt.Println("File Metadata:")
-	fmt.Println("Content-Type:", resp.Header.Get("Content-Type"))     // MIME Type
-	fmt.Println("Content-Length:", resp.Header.Get("Content-Length")) // File Size in bytes
-	fmt.Println("Last-Modified:", resp.Header.Get("Last-Modified"))   // Last modified date
-	fmt.Println("ETag:", resp.Header.Get("ETag"))                     // Unique identifier of the file
-
-	// Additional headers for debugging
-	fmt.Println("Cache-Control:", resp.Header.Get("Cache-Control"))
-	fmt.Println("Content-Disposition:", resp.Header.Get("Content-Disposition"))
-	fmt.Println("X-Amz-Meta-SomeCustomMetadata:", resp.Header.Get("X-Amz-Meta-SomeCustomMetadata"))
 }
 
 func AddTeacherClassNotesToStorage2(w http.ResponseWriter, r *http.Request) {
@@ -161,7 +132,6 @@ func AddTeacherClassNotesToStorage2(w http.ResponseWriter, r *http.Request) {
 	tokenString = tokenString[len("Bearer "):]
 	claims, err := middlewares.VerifyToken(tokenString)
 	if err != nil {
-		resp.Message = "unable to verify your token"
 		u.SendResponseWithUnauthorizedError(w)
 		return
 	}
@@ -177,7 +147,7 @@ func AddTeacherClassNotesToStorage2(w http.ResponseWriter, r *http.Request) {
 	groupId := r.FormValue("group_id")
 	isEditableBool, _ := strconv.ParseBool(isEditable)
 
-	if userId == "" || notesTitle == "" || notesDescription == "" || class == "" || topic == "" || subject == "" || visibility == "" || isEditable == "" || groupId == "" {
+	if missingFields(userId, notesTitle, notesDescription, class, topic, subject, visibility, isEditable, groupId) {
 		resp.Message = "Missing fields are not allowed. Kindly fill all the details."
 		u.SendResponseWithMissingValues(w)
 		return
@@ -222,9 +192,6 @@ func AddTeacherClassNotesToStorage2(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		// extension := filepath.Ext(fileHeader.Filename)
-		//TODO: rename this file as <timestamp_filename>
-		// newFileName := fmt.Sprintf("%s_%d%s", fileHeader.Filename, timestamp, extension)
 		newFileName := fmt.Sprintf("%d_%s", timestamp, fileHeader.Filename)
 
 		status, err := myAwsInstance.PutObjectToAWSS3(file, newFileName, s3BucketFolderPath)
@@ -275,6 +242,15 @@ func AddTeacherClassNotesToStorage2(w http.ResponseWriter, r *http.Request) {
 	resp.Message = fmt.Sprintf("%d files uploaded successfully", len(uploadedFileURLs))
 	resp.MyResponse = uploadedFileURLs
 	u.SendResponseWithOK(w, resp)
+}
+
+func missingFields(fields ...string) bool {
+	for _, field := range fields {
+		if field == "" {
+			return true
+		}
+	}
+	return false
 }
 
 func DeleteTeacherNotes(w http.ResponseWriter, r *http.Request) {
@@ -335,10 +311,11 @@ func DeleteTeacherNotes(w http.ResponseWriter, r *http.Request) {
 	trashId := helpers.GenerateUserID("trash")
 	deletedAt := time.Now().Unix()
 
-	_, err1 := db.Exec(addquery, deleteNotes, trashId, deleteNotes.DeletdNotesID, deleteNotes.GroupID, deletedAt, deleteNotes.NotesTitle, deleteNotes.Reason, deleteNotes.NotesDescription, deleteNotes.FileUrls)
+	_, err1 := db.Exec(addquery, trashId, deleteNotes.DeletdNotesID, deleteNotes.GroupID, deletedAt, deleteNotes.NotesTitle, deleteNotes.Reason, deleteNotes.NotesDescription, deleteNotes.FileUrls)
 
 	if err1 != nil {
 		resp.Message = "Error in deleting the notes"
+		fmt.Println(err1)
 		u.SendResponseWithServerError(w, resp)
 		return
 	}

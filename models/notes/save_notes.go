@@ -28,7 +28,6 @@ type GroupNotes struct {
 }
 
 type DeletedGroupNotes struct {
-	TrashID          string `json:"trash_id,omitempty"`
 	DeletdNotesID    string `json:"deleted_notes_id,omitempty"`
 	GroupID          string `json:"group_id,omitempty"`
 	NotesTitle       string `json:"notes_title,omitempty"`
