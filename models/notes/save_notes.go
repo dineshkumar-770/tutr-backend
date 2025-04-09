@@ -26,3 +26,13 @@ type GroupNotes struct {
 	IsEditable       bool     `json:"is_editable,omitempty"`
 	GroupId          string   `json:"group_id,omitempty"`
 }
+
+type DeletedGroupNotes struct {
+	TrashID          string `json:"trash_id,omitempty"`
+	DeletdNotesID    string `json:"deleted_notes_id,omitempty"`
+	GroupID          string `json:"group_id,omitempty"`
+	NotesTitle       string `json:"notes_title,omitempty"`
+	Reason           string `json:"reason,omitempty"`
+	NotesDescription string `json:"notes_description,omitempty"`
+	FileUrls         string `json:"file_urls,omitempty"`
+}

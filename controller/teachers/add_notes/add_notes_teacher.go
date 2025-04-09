@@ -1,6 +1,7 @@
 package addnotes
 
 import (
+	"encoding/json"
 	"fmt"
 	awshelper "main/aws_helper"
 	"main/constants"
@@ -98,7 +99,7 @@ func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 				Bucket: aws.String(envVars.S3BucketName),
 				Key:    aws.String(filePath),
 			})
-			signedURL, err := req.Presign(168 * time.Hour) 
+			signedURL, err := req.Presign(168 * time.Hour)
 			getFileMetadata(signedURL)
 			if err == nil {
 				signedURLs = append(signedURLs, signedURL)
@@ -131,10 +132,10 @@ func getFileMetadata(signedURL string) {
 
 	// Displaying the headers
 	fmt.Println("File Metadata:")
-	fmt.Println("Content-Type:", resp.Header.Get("Content-Type"))  // MIME Type
-	fmt.Println("Content-Length:", resp.Header.Get("Content-Length"))  // File Size in bytes
-	fmt.Println("Last-Modified:", resp.Header.Get("Last-Modified"))  // Last modified date
-	fmt.Println("ETag:", resp.Header.Get("ETag"))  // Unique identifier of the file
+	fmt.Println("Content-Type:", resp.Header.Get("Content-Type"))     // MIME Type
+	fmt.Println("Content-Length:", resp.Header.Get("Content-Length")) // File Size in bytes
+	fmt.Println("Last-Modified:", resp.Header.Get("Last-Modified"))   // Last modified date
+	fmt.Println("ETag:", resp.Header.Get("ETag"))                     // Unique identifier of the file
 
 	// Additional headers for debugging
 	fmt.Println("Cache-Control:", resp.Header.Get("Cache-Control"))
@@ -273,6 +274,77 @@ func AddTeacherClassNotesToStorage2(w http.ResponseWriter, r *http.Request) {
 	resp.Status = "success"
 	resp.Message = fmt.Sprintf("%d files uploaded successfully", len(uploadedFileURLs))
 	resp.MyResponse = uploadedFileURLs
+	u.SendResponseWithOK(w, resp)
+}
+
+func DeleteTeacherNotes(w http.ResponseWriter, r *http.Request) {
+	resp := u.ResponseStr{
+		Status:     "failed",
+		Message:    "something went wrong",
+		MyResponse: nil,
+	}
+
+	tokenString := r.Header.Get(constants.Authrization)
+	if tokenString == "" {
+		u.SendResponseWithUnauthorizedError(w)
+		return
+	}
+
+	tokenString = tokenString[len("Bearer "):]
+	claims, err := middlewares.VerifyToken(tokenString)
+	if err != nil {
+		resp.Message = "unable to verify your token"
+		u.SendResponseWithUnauthorizedError(w)
+		return
+	}
+
+	userId := claims["user_id"].(string)
+
+	if userId == "" {
+		resp.Message = "unable to verify your token"
+		u.SendResponseWithUnauthorizedError(w)
+		return
+	}
+
+	var deleteNotes notes.DeletedGroupNotes
+
+	deocodeErr := json.NewDecoder(r.Body).Decode(&deleteNotes)
+	if deocodeErr != nil {
+		resp.Message = "Some field are missing. kindly provide the proper fields"
+		resp.Status = constants.FAILED
+		u.SendResponseWithMissingValues(w)
+	}
+
+	deletequery := `
+	DELETE FROM tutrdevdb.teacher_notes WHERE teacher_notes.notes_id = (?);
+	`
+
+	addquery := `
+		INSERT INTO tutrdevdb.notes_trash (trash_id,deleted_notes_id,group_id,deleted_at,notes_title,reason,notes_description,file_urls) VALUES (?,?,?,?,?,?,?,?)
+	`
+
+	db := database.GetDBInstance()
+	_, dbErr := db.Exec(deletequery, deleteNotes.DeletdNotesID)
+
+	if dbErr != nil {
+		resp.Message = "Error in deleting the notes record."
+		u.SendResponseWithServerError(w, resp)
+		return
+	}
+
+	trashId := helpers.GenerateUserID("trash")
+	deletedAt := time.Now().Unix()
+
+	_, err1 := db.Exec(addquery, deleteNotes, trashId, deleteNotes.DeletdNotesID, deleteNotes.GroupID, deletedAt, deleteNotes.NotesTitle, deleteNotes.Reason, deleteNotes.NotesDescription, deleteNotes.FileUrls)
+
+	if err1 != nil {
+		resp.Message = "Error in deleting the notes"
+		u.SendResponseWithServerError(w, resp)
+		return
+	}
+
+	resp.Status = constants.SUCCESS
+	resp.Message = "Notes deleted successfully"
 	u.SendResponseWithOK(w, resp)
 }
 
