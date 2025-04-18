@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"main/utils"
 	"sync"
+
+	"github.com/dineshkumar-770/tutr-backend/utils"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -20,9 +21,10 @@ func Initialize() *sql.DB {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println("Databse URL: ",envs.DatabaseUrl)
 	once.Do(func() {
 		var err error
-		dbUrl := envs.DatabaseUrl 
+		dbUrl := envs.DatabaseUrl
 		dbInstance, err = sql.Open("mysql", dbUrl)
 		if err != nil {
 			log.Fatalf("Failed to connect to MySQL: %v", err)

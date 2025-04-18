@@ -2,12 +2,12 @@ package helpers
 
 import (
 	"fmt"
-	"main/constants"
-	"main/middlewares"
-	"main/models"
-	u "main/utils"
 	"net/http"
 	"strings"
+	"tutr-backend/constants"
+	"tutr-backend/middlewares"
+	"tutr-backend/models"
+	u "tutr-backend/utils"
 )
 
 func VerifyTokenAndGetUserID(w http.ResponseWriter, r *http.Request) (data models.TokenDataModel) {

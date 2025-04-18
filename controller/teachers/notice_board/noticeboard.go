@@ -3,12 +3,12 @@ package noticeboard
 import (
 	"database/sql"
 	"fmt"
-	"main/database"
-	"main/helpers"
-	tn "main/models/notice_board"
-	"main/utils"
 	"net/http"
 	"time"
+	"tutr-backend/database"
+	"tutr-backend/helpers"
+	tn "tutr-backend/models/notice_board"
+	"tutr-backend/utils"
 )
 
 func CreateNoticeForGroup(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +138,7 @@ func GetGroupNoticeBoard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groupId := r.FormValue("group_id") 
+	groupId := r.FormValue("group_id")
 
 	if groupId == "" {
 		utils.SendResponseWithMissingValues(w)
@@ -163,8 +163,8 @@ func GetGroupNoticeBoard(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fmt.Println("grt notcies rows== ",rows)
-	fmt.Println("grt notcies err== ",err)
+	fmt.Println("grt notcies rows== ", rows)
+	fmt.Println("grt notcies err== ", err)
 
 	for rows.Next() {
 		var notice tn.NoticeBoardModel

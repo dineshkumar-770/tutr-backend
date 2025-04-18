@@ -4,16 +4,16 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"main/constants"
-	"main/database"
-	"main/helpers"
-	"main/middlewares"
-	attendancemodel "main/models/attendance_model"
-	u "main/utils"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+	"tutr-backend/constants"
+	"tutr-backend/database"
+	"tutr-backend/helpers"
+	"tutr-backend/middlewares"
+	attendancemodel "tutr-backend/models/attendance_model"
+	u "tutr-backend/utils"
 )
 
 func MarkStudentAttendance(w http.ResponseWriter, r *http.Request) {

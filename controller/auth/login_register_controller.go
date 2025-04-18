@@ -3,12 +3,12 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
-	"main/database"
-	h "main/helpers"
-	"main/models"
-	u "main/utils"
 	"net/http"
 	"time"
+	"tutr-backend/database"
+	h "tutr-backend/helpers"
+	"tutr-backend/models"
+	u "tutr-backend/utils"
 )
 
 func CreateStudentUser(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +71,7 @@ func CreateTeacherUser(w http.ResponseWriter, r *http.Request) {
 	db := database.GetDBInstance()
 	_, errdb := db.Exec("INSERT INTO register_teachers (teacher_id,full_name,email,contact_number,subject,created_at,qualification,experience_years,address,class_assigned,teacher_code) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
 		teacher.TeacherID, teacher.FullName, teacher.Email, teacher.ContactNumber, teacher.Subject, teacher.CreatedAt, teacher.Qualification, teacher.ExperienceYears, teacher.Address, teacher.ClassAssigned, teacher.TeacherCode,
-	) 
+	)
 	if errdb != nil {
 		fmt.Println(errdb)
 		resp.Message = "cannot save user info or cannot create user at this time"

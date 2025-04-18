@@ -3,13 +3,13 @@ package profiledata
 import (
 	"database/sql"
 	"fmt"
-	"main/constants"
-	"main/database"
-	"main/middlewares"
-	"main/models"
-	u "main/utils"
 	"net/http"
 	"strings"
+	"tutr-backend/constants"
+	"tutr-backend/database"
+	"tutr-backend/middlewares"
+	"tutr-backend/models"
+	u "tutr-backend/utils"
 )
 
 func GetUserProfileData(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func GetUserProfileData(w http.ResponseWriter, r *http.Request) {
 	}
 	tokenString = tokenString[len("Bearer "):]
 	claims, err := middlewares.VerifyToken(tokenString)
-	if err != nil || claims["user_id"] == ""{
+	if err != nil || claims["user_id"] == "" {
 		resp.Message = "unable to verify your token"
 		fmt.Println(err)
 		u.SendResponseWithUnauthorizedError(w)

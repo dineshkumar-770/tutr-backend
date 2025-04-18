@@ -3,17 +3,17 @@ package creategroup
 import (
 	"encoding/json"
 	"fmt"
-	"main/constants"
-	"main/controller/student"
-	"main/database"
-	"main/helpers"
-	"main/middlewares"
-	"main/models"
-	tg "main/models/create_group"
-	u "main/utils"
 	"net/http"
 	"strings"
 	"time"
+	"tutr-backend/constants"
+	"tutr-backend/controller/student"
+	"tutr-backend/database"
+	"tutr-backend/helpers"
+	"tutr-backend/middlewares"
+	"tutr-backend/models"
+	tg "tutr-backend/models/create_group"
+	u "tutr-backend/utils"
 )
 
 func CreateTeacherStudentGroup(w http.ResponseWriter, r *http.Request) {

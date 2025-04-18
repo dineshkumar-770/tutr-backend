@@ -4,9 +4,9 @@ import (
 	"crypto/rand"
 	"fmt"
 
-	u "main/utils"
 	"math/big"
 	"net/smtp"
+	u "tutr-backend/utils"
 )
 
 func getHTMLOtpText(otp string) string {

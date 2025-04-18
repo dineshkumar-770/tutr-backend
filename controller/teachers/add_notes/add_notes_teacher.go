@@ -3,17 +3,18 @@ package addnotes
 import (
 	"encoding/json"
 	"fmt"
-	awshelper "main/aws_helper"
-	"main/constants"
-	"main/database"
-	"main/helpers"
-	"main/middlewares"
-	"main/models/notes"
-	u "main/utils"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+	awshelper "tutr-backend/aws_helper"
+	"tutr-backend/constants"
+	"tutr-backend/database"
+	"tutr-backend/helpers"
+	"tutr-backend/middlewares"
+	"tutr-backend/models/notes"
+	u "tutr-backend/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -85,7 +86,9 @@ func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fileURLList := strings.Split(groupNotes.FileNames, ",")
-		signedURLs := []string{}
+		// signedURLs := []string{}
+		var notesUrlModel notes.NotesUrlModel
+		var notesUrlModelList []notes.NotesUrlModel
 
 		if groupNotes.IsEditableInt == 1 {
 			groupNotes.IsEditable = true
@@ -100,10 +103,13 @@ func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 			})
 			signedURL, err := req.Presign(168 * time.Hour)
 			if err == nil {
-				signedURLs = append(signedURLs, signedURL)
+				// signedURLs = append(signedURLs, signedURL)
+				notesUrlModel.FileName = GetFileNameWithoutExtension(filePath)
+				notesUrlModel.NoteURL = signedURL
+				notesUrlModelList = append(notesUrlModelList, notesUrlModel)
 			}
 		}
-		groupNotes.FileURLsList = signedURLs
+		groupNotes.FileURLsList = notesUrlModelList
 
 		listOfGroupNotes = append(listOfGroupNotes, groupNotes)
 	}
@@ -112,6 +118,13 @@ func GetAllNotesOfTheGroup(w http.ResponseWriter, r *http.Request) {
 	resp.Message = "Notes fetched successfully"
 	resp.MyResponse = listOfGroupNotes
 	u.SendResponseWithOK(w, resp)
+}
+
+func GetFileNameWithoutExtension(file string) string {
+	fileNameWithExt := filepath.Base(file)
+	extension := filepath.Ext(fileNameWithExt)
+	fileName := strings.TrimSuffix(fileNameWithExt, extension)
+	return fileName
 }
 
 func AddTeacherClassNotesToStorage2(w http.ResponseWriter, r *http.Request) {

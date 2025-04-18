@@ -5,16 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	controller "main/controller/auth"
-	"main/database"
-	h "main/helpers"
-	"main/models"
+	controller "tutr-backend/controller/auth"
+	"tutr-backend/database"
+	h "tutr-backend/helpers"
+	"tutr-backend/models"
 
-	u "main/utils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+	u "tutr-backend/utils"
 )
 
 func TestCreateTeacherUserSuccess(t *testing.T) {

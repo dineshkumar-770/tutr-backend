@@ -2,11 +2,11 @@ package profiledata_test
 
 import (
 	"encoding/json"
-	profiledata "main/controller/profile_data"
-	u "main/utils"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	profiledata "tutr-backend/controller/profile_data"
+	u "tutr-backend/utils"
 
 	"github.com/stretchr/testify/assert"
 )

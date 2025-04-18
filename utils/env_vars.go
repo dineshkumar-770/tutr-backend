@@ -22,7 +22,7 @@ type EnvVariables struct {
 func GetEnvVars() (EnvVariables, error) {
 	var e EnvVariables
 	//Before running testing set the path /usr/local/go/src/tutr-backend/.env from .env
-	err := godotenv.Load(".env")
+	err := godotenv.Load("/opt/homebrew/Cellar/go/1.24.2/libexec/src/tutr-backend/.env")
 	if err != nil {
 		log.Fatal(err)
 		return e, err

@@ -3,13 +3,13 @@ package doubtchats
 import (
 	"database/sql"
 	"fmt"
-	"main/constants"
-	"main/database"
-	"main/helpers"
-	doubtchatmodel "main/models/doubt_chat_model"
-	u "main/utils"
 	"net/http"
 	"time"
+	"tutr-backend/constants"
+	"tutr-backend/database"
+	"tutr-backend/helpers"
+	doubtchatmodel "tutr-backend/models/doubt_chat_model"
+	u "tutr-backend/utils"
 )
 
 func CreateDoubtChatMessage(w http.ResponseWriter, r *http.Request) {

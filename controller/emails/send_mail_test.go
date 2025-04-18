@@ -2,14 +2,14 @@ package emails_test
 
 import (
 	"fmt"
-	"main/controller/emails"
-	"main/database"
-	u "main/utils"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+	"tutr-backend/controller/emails"
+	"tutr-backend/database"
+	u "tutr-backend/utils"
 )
 
 func TestSentEmailStudentSuccess(t *testing.T) {

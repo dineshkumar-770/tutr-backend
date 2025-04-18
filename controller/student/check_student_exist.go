@@ -3,13 +3,13 @@ package student
 import (
 	"database/sql"
 	"fmt"
-	"main/constants"
-	"main/database"
-	"main/models"
-	tg "main/models/create_group"
-	"main/utils"
 	"net/http"
 	"strconv"
+	"tutr-backend/constants"
+	"tutr-backend/database"
+	"tutr-backend/models"
+	tg "tutr-backend/models/create_group"
+	"tutr-backend/utils"
 )
 
 func CheckStudentExistOrNot(w http.ResponseWriter, r *http.Request) {

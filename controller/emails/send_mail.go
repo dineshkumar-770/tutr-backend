@@ -3,14 +3,14 @@ package emails
 import (
 	"database/sql"
 	"fmt"
-	"main/constants"
-	d "main/database"
-	"main/middlewares"
-	"main/models"
-	u "main/utils"
 	"net/http"
 	"strings"
 	"time"
+	"tutr-backend/constants"
+	d "tutr-backend/database"
+	"tutr-backend/middlewares"
+	"tutr-backend/models"
+	u "tutr-backend/utils"
 )
 
 func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {

@@ -3,10 +3,10 @@ package teachers
 import (
 	"database/sql"
 	"fmt"
-	"main/database"
-	"main/models"
-	"main/utils"
 	"net/http"
+	"tutr-backend/database"
+	"tutr-backend/models"
+	"tutr-backend/utils"
 )
 
 func GetAvailableTeachers(w http.ResponseWriter, r *http.Request) {

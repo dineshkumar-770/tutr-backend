@@ -3,9 +3,9 @@ package awshelper
 import (
 	"fmt"
 	"log"
-	"main/utils"
 	"mime/multipart"
 	"path"
+	"tutr-backend/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -31,7 +31,7 @@ func (a *AwsInstance) AwsInit() (*session.Session, error) {
 
 	awsSession, err := session.NewSession(
 		&aws.Config{
-			Region: aws.String(a.BucketName),
+			Region:      aws.String(a.BucketName),
 			Credentials: credentials.NewEnvCredentials(),
 		},
 	)
@@ -102,7 +102,6 @@ func (a *AwsInstance) AwsInit() (*session.Session, error) {
 // 	return true, err
 // }
 
-
 func (a *AwsInstance) PutObjectToAWSS3(file multipart.File, fileName string, filePathS3 string) (bool, error) {
 	// ✅ Load environment variables
 	envVars, err := utils.GetEnvVars()
@@ -143,7 +142,7 @@ func (a *AwsInstance) PutObjectToAWSS3(file multipart.File, fileName string, fil
 	return true, nil
 }
 
-func GetAllFilesFromBucket() *s3.S3 { 
+func GetAllFilesFromBucket() *s3.S3 {
 	envVars, _ := utils.GetEnvVars()
 	if envVars.S3BucketName == "" {
 		return nil
