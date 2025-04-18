@@ -6,7 +6,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/dineshkumar-770/tutr-backend/utils"
+	"main/utils"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -21,7 +21,7 @@ func Initialize() *sql.DB {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Databse URL: ",envs.DatabaseUrl)
+	fmt.Println("Databse URL: ", envs.DatabaseUrl)
 	once.Do(func() {
 		var err error
 		dbUrl := envs.DatabaseUrl

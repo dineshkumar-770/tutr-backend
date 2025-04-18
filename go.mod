@@ -1,4 +1,5 @@
-module github.com/dineshkumar-770/tutr-backend
+// module github.com/dineshkumar-770/tutr-backend
+module main
 
 go 1.22.6
 
