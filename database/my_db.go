@@ -14,20 +14,21 @@ var (
 	dbInstance *sql.DB
 	once       sync.Once
 )
- 
+
 func Initialize() *sql.DB {
 	envs, err := utils.GetEnvVars()
 	if err != nil {
-		fmt.Println(err) 
+		fmt.Println(err)
 	}
 	once.Do(func() {
- 		var err error
-		dbInstance, err = sql.Open("mysql", envs.DEVDATABASEURL)
+		var err error
+		dbUrl := envs.DatabaseUrl 
+		dbInstance, err = sql.Open("mysql", dbUrl)
 		if err != nil {
 			log.Fatalf("Failed to connect to MySQL: %v", err)
 		}
 
- 		if err = dbInstance.Ping(); err != nil {
+		if err = dbInstance.Ping(); err != nil {
 			log.Fatalf("Failed to ping MySQL: %v", err)
 		}
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"main/constants"
+	"main/controller/student"
 	"main/database"
 	"main/helpers"
 	"main/middlewares"
@@ -11,6 +12,7 @@ import (
 	tg "main/models/create_group"
 	u "main/utils"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -74,8 +76,13 @@ func GetAllGroupsCreatedByTeacher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.Contains(tokenData.UserID, "student") {
+		student.GetAllGroupsWhereStudentAdded(w, r, tokenData.UserID)
+		return
+	}
+
 	db := database.GetDBInstance()
-	rows, dbErr := db.Query("SELECT * FROM tution_management.teacher_student_group WHERE teacher_id = (?) ORDER BY created_at DESC", tokenData.UserID)
+	rows, dbErr := db.Query("SELECT * FROM tutrdevdb.teacher_student_group WHERE teacher_id = (?) ORDER BY created_at DESC", tokenData.UserID)
 
 	if dbErr != nil {
 		fmt.Println("parsing teachers groups ", dbErr)
@@ -85,11 +92,13 @@ func GetAllGroupsCreatedByTeacher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(rows)
+
 	for rows.Next() {
 		var group tg.CreateGroupModel
 
 		var members []tg.GroupMemberStudentsData
-		err := rows.Scan(&group.GroupID, &group.GroupName, &group.TeacherID, &group.CreatedAt, &group.GroupClass, &group.GroupDescription)
+		err := rows.Scan(&group.GroupID, &group.GroupName, &group.GroupDescription, &group.TeacherID, &group.CreatedAt, &group.GroupClass)
 		if err != nil {
 			fmt.Println("parsing teacher groups ", err)
 			resp.Status = "failed"
@@ -98,7 +107,7 @@ func GetAllGroupsCreatedByTeacher(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		rows1, memberErr := db.Query("select * from tution_management.group_members where group_id = (?) and owner_id = (?)", group.GroupID, tokenData.UserID)
+		rows1, memberErr := db.Query("select * from tutrdevdb.group_members where group_id = (?) and owner_id = (?)", group.GroupID, tokenData.UserID)
 		for rows1.Next() {
 			var member tg.GroupMemberStudentsData
 			err := rows1.Scan(&member.GroupMemberID, &member.GroupID, &member.StudentID, &member.OwnerID, &member.GroupOwner, &member.StudentJoinedAt, &member.StudentFullName, &member.StudentEmail, &member.StudentAccountCreatedAt, &member.StudentContactNumber, &member.StudentClass, &member.StudentParentsContact, &member.StudentFullAddress)
@@ -150,7 +159,7 @@ func AddStudentsToGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := database.GetDBInstance()
-	_, dbErr := db.Exec("INSERT INTO tution_management.group_members (group_member_id,group_id,student_id,owner_id,group_owner,joined_at,full_name,email,created_at,contact_number,class,parents_contact,full_address) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+	_, dbErr := db.Exec("INSERT INTO tutrdevdb.group_members (group_member_id,group_id,student_id,owner_id,group_owner,joined_at,full_name,email,created_at,contact_number,class,parents_contact,full_address) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
 		memberId, studentData.GroupID, studentData.StudentID, tokenData.UserID, studentData.OwnerName, joinedAt, studentData.FullName, studentData.Email, studentData.CreatedAt, studentData.ContactNumber, studentData.Class, studentData.ParentsContact, studentData.FullAddress)
 	if dbErr != nil {
 		resp.Message = "cannot add to the group"
@@ -159,7 +168,7 @@ func AddStudentsToGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp.Message = "Student added to your group successfully"
+	resp.Message = "Student added to ygour group successfully"
 	resp.Status = "success"
 	resp.MyResponse = nil
 	u.SendResponseWithOK(w, resp)
@@ -180,7 +189,7 @@ func GetAllStudentsOfGroup(w http.ResponseWriter, r *http.Request) {
 	var members []tg.GroupMemberStudentsData
 
 	ownerID := tokenData.UserID
-	groupID := r.FormValue("group_id")
+	groupID := r.URL.Query().Get("group_id")
 
 	if groupID == "" {
 		u.SendResponseWithMissingValues(w)
@@ -189,7 +198,7 @@ func GetAllStudentsOfGroup(w http.ResponseWriter, r *http.Request) {
 
 	db := database.GetDBInstance()
 
-	rows, dbErr := db.Query("select * from tution_management.group_members where group_id = (?) and owner_id = (?)", groupID, ownerID)
+	rows, dbErr := db.Query("select * from tutrdevdb.group_members where group_id = (?) and owner_id = (?)", groupID, ownerID)
 	if dbErr != nil {
 		resp.Message = "cannot fetch member of this group at now"
 		fmt.Println(dbErr)
@@ -208,6 +217,13 @@ func GetAllStudentsOfGroup(w http.ResponseWriter, r *http.Request) {
 		}
 
 		members = append(members, member)
+	}
+
+	if len(members) == 0 {
+		resp.Message = "no member found for this group"
+		resp.MyResponse = nil
+		u.SendResponseWithStatusNotFound(w, resp)
+		return
 	}
 
 	resp.Status = "success"

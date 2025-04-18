@@ -3,6 +3,7 @@ package emails
 import (
 	"database/sql"
 	"fmt"
+	"main/constants"
 	d "main/database"
 	"main/middlewares"
 	"main/models"
@@ -14,7 +15,7 @@ import (
 
 func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {
 	resp := u.ResponseStr{
-		Status:     "failed",
+		Status:     constants.FAILED,
 		Message:    "",
 		MyResponse: nil,
 	}
@@ -22,7 +23,7 @@ func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {
 	loginType := r.FormValue("login_type")
 
 	if email == "" || loginType == "" {
-		resp.Message = "missing field email is required!"
+		resp.Message = constants.MISSING_FIELD_EMAIL_MESSAGE
 		u.SendResponseWithStatusNotFound(w, resp)
 		return
 	}
@@ -31,12 +32,12 @@ func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {
 	var teacherID string
 	otpExpiry := time.Now().Add(time.Minute * 10).Unix()
 	db := d.GetDBInstance()
-	if loginType == "student" {
+	if loginType == constants.STUDENT {
 		stDBErr := db.QueryRow("SELECT student_id FROM register_students WHERE email = (?)", email).Scan(&studentID)
 		fmt.Println(studentID)
 		if stDBErr != nil {
 			if stDBErr == sql.ErrNoRows {
-				resp.Message = "User not found"
+				resp.Message = constants.USER_NOT_REGISTERED_MESSAGE
 				u.SendResponseWithStatusNotFound(w, resp)
 				return
 			} else {
@@ -47,22 +48,23 @@ func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {
 
 		otp, err := middlewares.SendEmail(email)
 		if err != nil {
-			resp.Message = "unable to send otp!"
+			resp.Message = constants.OTP_SENT_ERROR
 			u.SendResponseWithStatusBadRequest(w, resp)
 			return
 		}
 
 		db.Exec("INSERT INTO user_otps (otp,expiry,email,user_id,login_type) VALUES (?,?,?,?,?)", otp, otpExpiry, email, studentID, loginType)
-		resp.Status = "success"
-		resp.Message = "OTP sent successfully"
+		resp.Status = constants.SUCCESS
+		resp.Message = constants.OTP_SENT_SUCCESS
+		resp.MyResponse = otp
 		u.SendResponseWithOK(w, resp)
 		return
-	} else if loginType == "teacher" {
+	} else if loginType == constants.TEACHER {
 		tDBErr := db.QueryRow("SELECT teacher_id FROM register_teachers WHERE email = (?)", email).Scan(&teacherID)
 		fmt.Println("teacher id ", teacherID)
 		if tDBErr != nil {
 			if tDBErr == sql.ErrNoRows {
-				resp.Message = "User not found"
+				resp.Message = constants.USER_NOT_REGISTERED_MESSAGE
 				u.SendResponseWithStatusNotFound(w, resp)
 				return
 			} else {
@@ -73,14 +75,22 @@ func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {
 
 		otp, err := middlewares.SendEmail(email)
 		if err != nil {
-			resp.Message = "unable to send otp!"
+			resp.Message = constants.OTP_SENT_ERROR
 			u.SendResponseWithStatusBadRequest(w, resp)
 			return
 		}
 
-		db.Exec("INSERT INTO user_otps (otp,expiry,email,user_id,login_type) VALUES (?,?,?,?,?)", otp, otpExpiry, email, teacherID, loginType)
-		resp.Status = "success"
-		resp.Message = "OTP sent successfully"
+		_, exeErr := db.Exec("INSERT INTO user_otps (otp,expiry,email,user_id,login_type) VALUES (?,?,?,?,?)", otp, otpExpiry, email, teacherID, loginType)
+		if exeErr != nil {
+			resp.Message = constants.DB_INSERT_OTP_FAILED
+			fmt.Println(exeErr)
+			u.SendResponseWithServerError(w, resp)
+			return
+		}
+		resp.Status = constants.SUCCESS
+		resp.Message = constants.OTP_SENT_SUCCESS
+		fmt.Println("otp request my user", otp)
+		resp.MyResponse = otp
 		u.SendResponseWithOK(w, resp)
 		return
 	}
@@ -88,7 +98,7 @@ func SendOTPByEmail(w http.ResponseWriter, r *http.Request) {
 
 func VerifyOtp(w http.ResponseWriter, r *http.Request) {
 	resp := u.ResponseStr{
-		Status:     "failed",
+		Status:     constants.FAILED,
 		Message:    "",
 		MyResponse: nil,
 	}
@@ -97,7 +107,7 @@ func VerifyOtp(w http.ResponseWriter, r *http.Request) {
 	loginType := r.FormValue("login_type")
 
 	if submittedOTP == "" || emailId == "" || loginType == "" {
-		resp.Message = "missing field email is required!"
+		resp.Message = constants.MISSING_FIELD_EMAIL_MESSAGE
 		u.SendResponseWithStatusNotFound(w, resp)
 		return
 	}
@@ -108,7 +118,7 @@ func VerifyOtp(w http.ResponseWriter, r *http.Request) {
 		&otpUser.Otp, &otpUser.Expiry, &otpUser.Email, &otpUser.UserId, &otpUser.LoginType)
 	if dbErr != nil {
 		if dbErr == sql.ErrNoRows {
-			resp.Message = "Invalid OTP!"
+			resp.Message = constants.INVALID_OTP_MESSAGE
 			resp.MyResponse = dbErr
 			u.SendResponseWithStatusNotFound(w, resp)
 			return
@@ -123,8 +133,8 @@ func VerifyOtp(w http.ResponseWriter, r *http.Request) {
 		expiryDuration := int64(15)
 		time.Sleep(2 * time.Second)
 		if !isOtpExpired(otpGeneratedAt, expiryDuration) {
-			resp.Message = "OTP verified successfully"
-			resp.Status = "success"
+			resp.Message = constants.OTP_VERIFIED_MESSAGE
+			resp.Status = constants.SUCCESS
 			token, err := middlewares.CreateToken(otpUser.UserId, otpUser.Email, otpUser.LoginType)
 			if err != nil {
 				fmt.Println("token error: ", err)
@@ -134,13 +144,13 @@ func VerifyOtp(w http.ResponseWriter, r *http.Request) {
 			u.SendResponseWithOK(w, resp)
 			return
 		} else {
-			resp.Message = "OTP expired"
+			resp.Message = constants.OTP_EXPIRED_MESSAGE
 			u.SendResponseWithStatusBadRequest(w, resp)
 			return
 		}
 
 	} else {
-		resp.Message = "Invalid OTP !"
+		resp.Message = constants.INVALID_OTP_MESSAGE
 		u.SendResponseWithStatusBadRequest(w, resp)
 		return
 	}
