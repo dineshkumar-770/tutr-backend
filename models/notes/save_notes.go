@@ -19,10 +19,24 @@ type GroupNotes struct {
 	NotesSubject     string   `json:"notes_subject,omitempty"`
 	TeacherId        string   `json:"teacher_id,omitempty"`
 	UploadedAt       int64    `json:"uploaded_at,omitempty"`
-	FileURLsList     []string `json:"attached_files,omitempty"`
+	FileURLsList     []NotesURLFiles `json:"attached_files,omitempty"`
 	FileNames        string   `json:"-"`
 	NotesVisiblity   string   `json:"notes_visiblity,omitempty"`
 	IsEditableInt    int      `json:"-"`
 	IsEditable       bool     `json:"is_editable,omitempty"`
 	GroupId          string   `json:"group_id,omitempty"`
+}
+
+type NotesURLFiles struct {
+	NotesFileName string `json:"file_name,omitempty"`
+	NotesFileURL string `json:"note_url,omitempty"`
+}
+
+type DeletedGroupNotes struct {
+	DeletdNotesID    string `json:"deleted_notes_id,omitempty"`
+	GroupID          string `json:"group_id,omitempty"`
+	NotesTitle       string `json:"notes_title,omitempty"`
+	Reason           string `json:"reason,omitempty"`
+	NotesDescription string `json:"notes_description,omitempty"`
+	FileUrls         string `json:"file_urls,omitempty"`
 }

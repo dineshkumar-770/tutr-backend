@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"main/controller/attendance"
 	controller "main/controller/auth"
 	doubtchats "main/controller/doubt_chats"
 	"main/controller/emails"
@@ -29,8 +30,8 @@ func main() {
 	r.HandleFunc("/create_group", tg.CreateTeacherStudentGroup).Methods("POST")
 	r.HandleFunc("/get_teachers_student_groups", tg.GetAllGroupsCreatedByTeacher).Methods("GET")
 	r.HandleFunc("/add_student_to_group", tg.AddStudentsToGroup).Methods("POST")
-	r.HandleFunc("/check_user_exist", s.CheckStudentExistOrNot).Methods("POST")
-	r.HandleFunc("/get_all_group_members_teacher", tg.GetAllStudentsOfGroup).Methods("POST")
+	r.HandleFunc("/check_user_exist", s.CheckStudentExistOrNot).Methods("GET")
+	r.HandleFunc("/get_all_group_members_teacher", tg.GetAllStudentsOfGroup).Methods("GET")
 	r.HandleFunc("/create_notice_for_group", tn.CreateNoticeForGroup).Methods("POST")
 	r.HandleFunc("/update_group_notice", tn.UpdateNoticeBoardForGroup).Methods("POST")
 	r.HandleFunc("/get_group_notices", tn.GetGroupNoticeBoard).Methods("POST")
@@ -39,6 +40,9 @@ func main() {
 	r.HandleFunc("/get_user_profile", p.GetUserProfileData).Methods("GET")
 	r.HandleFunc("/save_teacher_note", tan.AddTeacherClassNotesToStorage2).Methods("POST")
 	r.HandleFunc("/get_all_notes_in_group", tan.GetAllNotesOfTheGroup).Methods("GET")
+	r.HandleFunc("/mark_attendance", attendance.MarkStudentAttendance).Methods("POST")
+	r.HandleFunc("/get_attendance_record", attendance.GetAllAttendanceDataOfGroup).Methods("GET")
+	r.HandleFunc("/delete_notes", tan.DeleteTeacherNotes).Methods("DELETE")
 	log.Println("Server starting on port 8088...")
 	log.Fatal(http.ListenAndServe(":8088", r))
 }
